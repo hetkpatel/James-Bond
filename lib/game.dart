@@ -181,9 +181,11 @@ class _GameState extends State<Game> {
                     child: DragTarget(
                       builder: (context, List<PlayingCard> candidateData,
                           rejectedData) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: _generateCenterCards(),
+                        return SingleChildScrollView(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: _generateCenterCards(),
+                          ),
                         );
                       },
                       onWillAccept: (data) {

@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
+import 'package:james_bond/DatabaseStates.dart';
+import 'package:james_bond/Player.dart';
 
 class JoinRoom extends StatefulWidget {
   @override
@@ -10,7 +14,8 @@ class JoinRoom extends StatefulWidget {
 class _JoinRoomState extends State<JoinRoom> {
   FocusNode _fn1 = new FocusNode(),
       _fn2 = new FocusNode(),
-      _fn3 = new FocusNode();
+      _fn3 = new FocusNode(),
+      _fn4 = new FocusNode();
   final database = FirebaseDatabase.instance.reference();
   var code = new List(4), uuid = "";
   var joinedRoom = false, playerName = "";
@@ -20,59 +25,70 @@ class _JoinRoomState extends State<JoinRoom> {
     code[currentCurPos] = character;
     switch (currentCurPos) {
       case 0:
-        if (character != "") FocusScope.of(context).requestFocus(_fn1);
-        break;
-      case 1:
         if (character != "") FocusScope.of(context).requestFocus(_fn2);
         break;
-      case 2:
-        if (character != "") FocusScope.of(context).requestFocus(_fn3);
+      case 1:
+        if (character != "")
+          FocusScope.of(context).requestFocus(_fn3);
+        else
+          FocusScope.of(context).requestFocus(_fn1);
         break;
+      case 2:
+        if (character != "")
+          FocusScope.of(context).requestFocus(_fn4);
+        else
+          FocusScope.of(context).requestFocus(_fn2);
+        break;
+      case 3:
+        if (character != "")
+          joinRoom();
+        else
+          FocusScope.of(context).requestFocus(_fn3);
     }
   }
 
-//  void joinRoom(lastChar) {
-//    if (lastChar != null) code[3] = lastChar;
-//    var passCode = "";
-//    for (var i = 0; i < code.length; i++) passCode += code[i];
-//    if (passCode.length == 4) {
-//      passCode = passCode.toLowerCase();
-//      database.child('rooms/$passCode').once().then((DataSnapshot snapshot) {
-//        if (snapshot.value != null) {
-//          setState(() {
-//            joinedRoom = true;
-//            uuid = snapshot.value;
-//            database
-//                .child('$uuid/players')
-//                .once()
-//                .then((DataSnapshot playersSS) {
-//              var listOfPlayers = Map.from(playersSS.value);
-//              playerName = Player.makePlayer();
-//              listOfPlayers.addAll({playerName: "player"});
-//              database.child(uuid).update({'players': listOfPlayers});
-//              listenRoomState();
-//            });
-//          });
-//        }
-//      });
-//    }
-//  }
+  void joinRoom() {
+    var passCode = "";
+    for (var i = 0; i < code.length; i++) passCode += code[i];
 
-//  void listenRoomState() {
-//    database.child("$uuid/state").onValue.listen((Event event) {
-//      if (event.snapshot.value == "viewRoles") {
-//        destroy = false;
-//        Navigator.popUntil(context, ModalRoute.withName("/"));
-//        Navigator.pushReplacementNamed(context, "/ViewRole",
-//            arguments: PlayerArgs(uuid, playerName, false));
-//      }
-//    });
-//  }
+    if (passCode.length == 4) {
+      passCode = passCode.toLowerCase();
+      database.child('rooms/$passCode').once().then((DataSnapshot snapshot) {
+        if (snapshot.value != null) {
+          setState(() {
+            joinedRoom = true;
+            uuid = snapshot.value;
+            database
+                .child('$uuid/players')
+                .once()
+                .then((DataSnapshot playersSS) {
+              var listOfPlayers = Map.from(playersSS.value);
+              listOfPlayers.addAll({
+                "player2": Player.NAMES[Random().nextInt(Player.NAMES.length)]
+              });
+              database.child(uuid).update({'players': listOfPlayers});
+              listenRoomState();
+            });
+          });
+        }
+      });
+    }
+  }
+
+  void listenRoomState() {
+    database.child("$uuid/state").onValue.listen((Event event) {
+      if (event.snapshot.value == DatabaseStates.DEAL_CARDS) {
+        destroy = false;
+        Navigator.popUntil(context, ModalRoute.withName("/"));
+        Navigator.pushReplacementNamed(context, "/Game");
+      }
+    });
+  }
 
   @override
   void dispose() {
     super.dispose();
-    if (destroy) database.child('$uuid/players/$playerName').remove();
+    if (destroy) database.child('$uuid/players/player2').remove();
   }
 
   @override
@@ -92,6 +108,7 @@ class _JoinRoomState extends State<JoinRoom> {
                     enabled: !joinedRoom,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 100),
+                    focusNode: _fn1,
                     onChanged: (String str) => onTypingCode(str, 0),
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [LengthLimitingTextInputFormatter(1)],
@@ -104,7 +121,7 @@ class _JoinRoomState extends State<JoinRoom> {
                     enabled: !joinedRoom,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 100),
-                    focusNode: _fn1,
+                    focusNode: _fn2,
                     onChanged: (String str) => onTypingCode(str, 1),
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [LengthLimitingTextInputFormatter(1)],
@@ -117,7 +134,7 @@ class _JoinRoomState extends State<JoinRoom> {
                     enabled: !joinedRoom,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 100),
-                    focusNode: _fn2,
+                    focusNode: _fn3,
                     onChanged: (String str) => onTypingCode(str, 2),
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [LengthLimitingTextInputFormatter(1)],
@@ -130,8 +147,8 @@ class _JoinRoomState extends State<JoinRoom> {
                   enabled: !joinedRoom,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 100),
-                  focusNode: _fn3,
-//                  onChanged: (String str) => joinRoom(str),
+                  focusNode: _fn4,
+                  onChanged: (String str) => onTypingCode(str, 3),
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [LengthLimitingTextInputFormatter(1)],
                 ))
@@ -139,9 +156,8 @@ class _JoinRoomState extends State<JoinRoom> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             ),
             RaisedButton(
-              onPressed: null,
-//              onPressed: joinedRoom ? null : () => joinRoom(null),
-              color: Colors.red,
+              onPressed: joinedRoom ? null : () => print('join room'),
+              color: Colors.blue,
               textColor: Colors.white,
               child: Text('Join'),
             ),
@@ -155,7 +171,7 @@ class _JoinRoomState extends State<JoinRoom> {
                             AsyncSnapshot<Event> snapshot) {
                           if (snapshot.hasData) {
                             var players = Map.from(snapshot.data.snapshot.value)
-                                .keys
+                                .values
                                 .toList();
                             return ListView.builder(
                               itemBuilder: (BuildContext context, int index) {
