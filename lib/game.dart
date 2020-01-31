@@ -18,6 +18,8 @@ class _GameState extends State<Game> {
   void initState() {
     super.initState();
 
+    // TODO: Perform a better way to divide the cards and make it more even and random
+
     // Create a full 52 deck
     List<PlayingCard> fullDeck = [];
     for (int i = 0; i < CardData.values.length; i++)
@@ -58,12 +60,57 @@ class _GameState extends State<Game> {
         onWillAccept: (data) {
           return !decks[index].deck.contains(data);
         },
-        onAccept: (data) {
-          if (centerCards.contains(data))
-            setState(() {
-              centerCards.remove(data);
-            });
-          else
+        onAccept: (data) async {
+          if (centerCards.contains(data)) {
+            var result = await showDialog<PlayingCard>(
+                context: context,
+                barrierDismissible: true,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select card to swap'),
+                    children: <Widget>[
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(
+                              context, keys[index].currentState.widget.deck[0]);
+                        },
+                        child: Text(
+                            '${keys[index].currentState.widget.deck[0].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[0].suit.index]}'),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(
+                              context, keys[index].currentState.widget.deck[1]);
+                        },
+                        child: Text(
+                            '${keys[index].currentState.widget.deck[1].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[1].suit.index]}'),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(
+                              context, keys[index].currentState.widget.deck[2]);
+                        },
+                        child: Text(
+                            '${keys[index].currentState.widget.deck[2].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[2].suit.index]}'),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(
+                              context, keys[index].currentState.widget.deck[3]);
+                        },
+                        child: Text(
+                            '${keys[index].currentState.widget.deck[3].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[3].suit.index]}'),
+                      )
+                    ],
+                  );
+                });
+            if (result != null) {
+              setState(() {
+                centerCards.remove(data);
+                centerCards.add(result);
+              });
+            }
+          } else
             for (int i = 0; i < keys.length; i++) {
               if (decks[i].deck.contains(data))
                 keys[i].currentState.removeCard(data);
@@ -152,11 +199,10 @@ class _GameState extends State<Game> {
                         );
                       },
                       onWillAccept: (data) {
-                        return centerCards.length < 4;
+                        return centerCards.length < 4 &&
+                            !centerCards.contains(data);
                       },
                       onAccept: (data) {
-                        print(data);
-                        print((data as PlayingCard).value);
                         for (int i = 0; i < keys.length; i++) {
                           if (decks[i].deck.contains(data))
                             keys[i].currentState.removeCard(data);

@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:james_bond/game.dart';
 import 'package:james_bond/joinRoom.dart';
 import 'package:james_bond/newRoom.dart';
 import 'package:james_bond/welcome.dart';
@@ -22,10 +23,12 @@ class JamesBond extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Welcome(),
-      routes: <String, WidgetBuilder> {
+//      home: Welcome(),
+      home: Game(),
+      routes: <String, WidgetBuilder>{
         "/NewRoom": (BuildContext context) => new NewRoom(),
         "/JoinRoom": (BuildContext context) => new JoinRoom(),
+        "/Game": (BuildContext context) => new Game(),
       },
     );
   }

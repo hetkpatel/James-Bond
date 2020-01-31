@@ -114,6 +114,10 @@ class PlayingCard {
 
 enum CardSuit { SPADE, HEART, DIAMOND, CLUB }
 
+class CardSuitString {
+  static final List<String> SUITS = ["Spades", "Hearts", "Diamonds", "Clubs"];
+}
+
 enum _IconSize { LARGE, SMALL }
 
 class CardData {
