@@ -68,54 +68,26 @@ class _GameState extends State<Game> {
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select card to swap'),
-                    children: <Widget>[
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(
-                              context, keys[index].currentState.widget.deck[0]);
-                        },
-                        child: Text(
-                            '${keys[index].currentState.widget.deck[0].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[0].suit.index]}'),
-                      ),
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(
-                              context, keys[index].currentState.widget.deck[1]);
-                        },
-                        child: Text(
-                            '${keys[index].currentState.widget.deck[1].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[1].suit.index]}'),
-                      ),
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(
-                              context, keys[index].currentState.widget.deck[2]);
-                        },
-                        child: Text(
-                            '${keys[index].currentState.widget.deck[2].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[2].suit.index]}'),
-                      ),
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(
-                              context, keys[index].currentState.widget.deck[3]);
-                        },
-                        child: Text(
-                            '${keys[index].currentState.widget.deck[3].value} of ${CardSuitString.SUITS[keys[index].currentState.widget.deck[3].suit.index]}'),
-                      )
-                    ],
+                    children: _generateDialogOptions(
+                        keys[index].currentState.widget.deck, index),
                   );
                 });
             if (result != null) {
               setState(() {
                 centerCards.remove(data);
                 centerCards.add(result);
+                keys[index].currentState.removeCard(result);
+                keys[index].currentState.addCard(data);
               });
-            }
-          } else
+            } else
+              print('no result');
+          } else {
             for (int i = 0; i < keys.length; i++) {
               if (decks[i].deck.contains(data))
                 keys[i].currentState.removeCard(data);
             }
-          keys[index].currentState.addCard(data);
+            keys[index].currentState.addCard(data);
+          }
         },
       ),
     );
@@ -126,6 +98,22 @@ class _GameState extends State<Game> {
     for (int i = 0; i < centerCards.length; i++)
       _result.add(centerCards[i].buildCard(true));
     return _result;
+  }
+
+  List<Widget> _generateDialogOptions(List<PlayingCard> deck, int deckIndex) {
+    List<Widget> result = [];
+    for (int i = 0; i < deck.length; i++) {
+      result.add(
+        SimpleDialogOption(
+          onPressed: () {
+            Navigator.pop(context, keys[deckIndex].currentState.widget.deck[i]);
+          },
+          child: Text('${keys[deckIndex].currentState.widget.deck[i].value} of ' +
+              '${CardSuitString.SUITS[keys[deckIndex].currentState.widget.deck[i].suit.index]}'),
+        ),
+      );
+    }
+    return result;
   }
 
   void closeOtherDecks(int openingIndex) {
