@@ -4,6 +4,7 @@ import 'package:james_bond/PlayingCard.dart';
 
 final key = new GlobalKey<DeckState>();
 
+// ignore: must_be_immutable
 class Deck extends StatefulWidget {
   List<PlayingCard> deck = [];
 
@@ -14,8 +15,10 @@ class Deck extends StatefulWidget {
 }
 
 class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
+  // ignore: non_constant_identifier_names
   static final double SPACING = 26.0;
   bool flip = false;
+  bool stackComplete = false;
   AnimationController _controller;
   Animation<double> animation;
 
@@ -52,15 +55,23 @@ class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
           ),
         ),
       );
-    else
+    else {
+      stackComplete = stack.length == 4;
+      if (stackComplete)
+        for (int i = 0; i < stack.length; i++)
+          for (int j = 1; j < stack.length; j++)
+            if (stackComplete) stackComplete = stack[i].value == stack[j].value;
+
       for (int i = 0; i < stack.length; i++) {
         result.add(
           Positioned(
             top: i == 0 ? null : animation.value * i,
-            child: stack[i].buildCard(flip),
+            child:
+                stack[i].buildCard(flipped: flip, stackFinished: stackComplete),
           ),
         );
       }
+    }
     return result;
   }
 

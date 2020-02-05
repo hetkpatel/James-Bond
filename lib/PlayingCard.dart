@@ -8,7 +8,30 @@ class PlayingCard {
 
   PlayingCard({this.suit, this.value});
 
-  Widget _generateCard(bool flipped) {
+  PlayingCard.fromString(String parsedString) {
+    String suit = parsedString.split("|")[0];
+    String value = parsedString.split("|")[1];
+    switch (suit) {
+      case "Spades":
+        this.suit = CardSuit.SPADE;
+        break;
+      case "Hearts":
+        this.suit = CardSuit.HEART;
+        break;
+      case "Diamonds":
+        this.suit = CardSuit.DIAMOND;
+        break;
+      case "Clubs":
+        this.suit = CardSuit.CLUB;
+        break;
+
+      default:
+        break;
+    }
+    this.value = value;
+  }
+
+  Widget _generateCard(bool flipped, bool stackFinished) {
     return SizedBox(
       width: 100.0,
       height: 155.0,
@@ -55,7 +78,7 @@ class PlayingCard {
                 )
               : ClipRRect(
                   child: Container(
-                    color: Colors.blue,
+                    color: stackFinished ? Colors.green : Colors.blue,
                   ),
                   borderRadius: BorderRadius.circular(5.0),
                 ),
@@ -64,19 +87,18 @@ class PlayingCard {
     );
   }
 
-  Widget buildCard(bool flipped) {
+  Widget buildCard({@required bool flipped, @required bool stackFinished, bool partOfCenter}) {
+    if (partOfCenter == null) partOfCenter = false;
     if (flipped)
-      return LongPressDraggable<PlayingCard>(
-          hapticFeedbackOnStart: true,
-          data: this,
-          childWhenDragging: Container(
-            height: 155.0,
-            width: 100.0,
-          ),
-          feedback: _generateCard(flipped),
-          child: _generateCard(flipped));
+      return !partOfCenter
+          ? Draggable<PlayingCard>(
+//              hapticFeedbackOnStart: true,
+              data: this,
+              feedback: _generateCard(flipped, stackFinished),
+              child: _generateCard(flipped, stackFinished))
+          : _generateCard(flipped, stackFinished);
     else
-      return _generateCard(flipped);
+      return _generateCard(flipped, stackFinished);
   }
 
   // TODO: Change icons to be more similar
@@ -110,11 +132,24 @@ class PlayingCard {
     }
     return null;
   }
+
+  String retriveStringFormat() {
+    return CardSuitString.SUITS[this.suit.index] + "|" + this.value;
+  }
+
+  static List<String> toDatabase(List<PlayingCard> stack) {
+    List<String> result = [];
+    for (int i = 0; i < stack.length; i++)
+      result.add(
+          CardSuitString.SUITS[stack[i].suit.index] + "|" + stack[i].value);
+    return result;
+  }
 }
 
 enum CardSuit { SPADE, HEART, DIAMOND, CLUB }
 
 class CardSuitString {
+  // ignore: non_constant_identifier_names
   static final List<String> SUITS = ["Spades", "Hearts", "Diamonds", "Clubs"];
 }
 

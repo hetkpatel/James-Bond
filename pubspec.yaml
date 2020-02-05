@@ -27,6 +27,7 @@ dependencies:
   dotted_border: ^1.0.4
   firebase_database: ^3.1.1
   uuid: ^2.0.4
+  connectivity_wrapper: ^1.0.2
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:james_bond/DatabaseStates.dart';
 import 'package:james_bond/Player.dart';
+import 'package:james_bond/game.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math';
 
@@ -69,7 +70,7 @@ class _NewRoomState extends State<NewRoom> {
     database.child('$uuid/state').set(DatabaseStates.DEAL_CARDS);
     destroy = false;
     Navigator.popUntil(context, ModalRoute.withName("/"));
-    Navigator.pushReplacementNamed(context, "/Game");
+    Navigator.pushReplacementNamed(context, "/Game", arguments: GameArgs(uuid: uuid, host: true));
   }
 
   @override
@@ -80,6 +81,8 @@ class _NewRoomState extends State<NewRoom> {
       database.child(uuid).remove();
       roomAddState.cancel();
       roomRmvState.cancel();
+    } else {
+      database.child('rooms').update({'$str': null});
     }
   }
 

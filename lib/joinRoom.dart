@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 import 'package:james_bond/DatabaseStates.dart';
 import 'package:james_bond/Player.dart';
+import 'package:james_bond/game.dart';
 
 class JoinRoom extends StatefulWidget {
   @override
@@ -80,7 +81,7 @@ class _JoinRoomState extends State<JoinRoom> {
       if (event.snapshot.value == DatabaseStates.DEAL_CARDS) {
         destroy = false;
         Navigator.popUntil(context, ModalRoute.withName("/"));
-        Navigator.pushReplacementNamed(context, "/Game");
+        Navigator.pushReplacementNamed(context, "/Game", arguments: GameArgs(uuid: uuid, host: false));
       }
     });
   }
@@ -156,6 +157,7 @@ class _JoinRoomState extends State<JoinRoom> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             ),
             RaisedButton(
+              // FIXME: join room
               onPressed: joinedRoom ? null : () => print('join room'),
               color: Colors.blue,
               textColor: Colors.white,

@@ -1,4 +1,5 @@
 class Player {
+  // ignore: non_constant_identifier_names
   static final List<String> NAMES = [
     "Attractive Andy",
     "Bald Betty",

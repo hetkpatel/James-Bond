@@ -1,58 +1,131 @@
 import 'dart:math';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:james_bond/CenterCards.dart';
+import 'package:james_bond/DatabaseStates.dart';
 import 'package:james_bond/Deck.dart';
 import 'package:james_bond/PlayingCard.dart';
+import 'package:james_bond/winningScreen.dart';
 
 class Game extends StatefulWidget {
+  final String uuid;
+  final bool host;
+
+  Game({Key key, @required this.uuid, @required this.host}) : super(key: key);
+
   @override
   _GameState createState() => _GameState();
 }
 
 class _GameState extends State<Game> {
   final List<GlobalKey<DeckState>> keys = [];
+  DatabaseReference ref = FirebaseDatabase.instance.reference();
   List<Deck> decks = [];
-  List<PlayingCard> centerCards = [];
+
+//  List<PlayingCard> centerCards = [];
+  GlobalKey<CenterCardsState> centerKey = GlobalKey();
+  CenterCards centerCards;
 
   @override
   void initState() {
     super.initState();
+    ref = ref.child(widget.uuid);
 
-    // TODO: Perform a better way to divide the cards and make it more even and random
+    if (widget.host) {
+      // TODO: Perform a better way to divide the cards and make it more even and random
+      // Create a full 52 deck
+      List<PlayingCard> fullDeck = [];
+      for (int i = 0; i < CardData.values.length; i++)
+        for (int j = 0; j < CardSuit.values.length; j++)
+          fullDeck.add(
+              PlayingCard(suit: CardSuit.values[j], value: CardData.values[i]));
 
-    // Create a full 52 deck
-    List<PlayingCard> fullDeck = [];
-    for (int i = 0; i < CardData.values.length; i++)
-      for (int j = 0; j < CardSuit.values.length; j++)
-        fullDeck.add(
-            PlayingCard(suit: CardSuit.values[j], value: CardData.values[i]));
+      // Randomly give 24 cards to this player
+      for (int i = 0; i < 6; i++) {
+        List<PlayingCard> deck = [];
+        for (int j = 0; j < 4; j++)
+          deck.add(fullDeck.removeAt(Random().nextInt(fullDeck.length)));
 
-    // Randomly give 24 cards to this player
-    for (int i = 0; i < 6; i++) {
-      List<PlayingCard> deck = [];
-      for (int j = 0; j < 4; j++)
-        deck.add(fullDeck.removeAt(Random().nextInt(fullDeck.length)));
+        keys.add(GlobalKey<DeckState>());
+        decks.add(Deck(
+          key: keys[i],
+          deck: deck,
+        ));
+      }
 
-      keys.add(GlobalKey<DeckState>());
-      decks.add(Deck(
-        key: keys[i],
-        deck: deck,
-      ));
+      // Give 24 cards to opponent player
+      List<PlayingCard> pack24 = [];
+      for (int i = 0; i < 24; i++)
+        pack24.add(fullDeck.removeAt(Random().nextInt(fullDeck.length)));
+      ref.child("24Pack").set(PlayingCard.toDatabase(pack24));
+
+      // Assign the remaining 4 cards as the cards in the center
+      centerCards = CenterCards(
+        key: centerKey,
+        cards: fullDeck,
+        uuid: widget.uuid,
+      );
+      ref.child("centerCards").set(PlayingCard.toDatabase(centerCards.cards));
+    } else {
+      // TODO: get centerCards and 24-pack from database
+      ref.child("24Pack").once().then((pack) {
+        var stringPack = pack.value;
+        List<PlayingCard> deck24 = [];
+        for (int i = 0; i < stringPack.length; i++)
+          deck24.add(PlayingCard.fromString(stringPack[i]));
+
+        for (int i = 0; i < 6; i++) {
+          List<PlayingCard> deck = [];
+          for (int j = 0; j < 4; j++)
+            deck.add(deck24.removeAt(Random().nextInt(deck24.length)));
+
+          keys.add(GlobalKey<DeckState>());
+          decks.add(Deck(
+            key: keys[i],
+            deck: deck,
+          ));
+        }
+        setState(() {});
+      });
+
+      ref.child("centerCards").once().then((center) {
+        var stringPack = center.value;
+        List<PlayingCard> cards = [];
+        for (int i = 0; i < stringPack.length; i++)
+          cards.add(PlayingCard.fromString(stringPack[i]));
+        setState(() {
+          centerCards = CenterCards(
+            key: centerKey,
+            cards: cards,
+            uuid: widget.uuid,
+          );
+        });
+      });
     }
 
-    // TODO: Randomly give 24 cards to opponent player
-    for (int i = 0; i < 24; i++)
-      fullDeck.removeAt(Random().nextInt(fullDeck.length));
-
-    // Assign the remaining 4 cards as the cards in the center
-    centerCards = fullDeck;
+    ref.child('state').onChildChanged.listen((state) {
+      if (state.snapshot.value == DatabaseStates.FINISH) {
+        Navigator.popUntil(context, ModalRoute.withName("/"));
+        Navigator.pushReplacementNamed(context, "/Winning",
+            arguments: WinningArgs(playerWon: false));
+      }
+    });
   }
 
-  Widget deckBuilder(int index) {
+//  @override
+//  void dispose() {
+//    super.dispose();
+//    DatabaseReference database = FirebaseDatabase.instance.reference();
+//    database.child(widget.uuid).remove();
+//  }
+
+  Widget _deckBuilder(int index) {
     return GestureDetector(
-      onVerticalDragEnd: (drag) {
-        if (drag.primaryVelocity > 0) closeOtherDecks(index);
-      },
+//      onVerticalDragEnd: (drag) {
+//        if (drag.primaryVelocity > 0) closeOtherDecks(index);
+//      },
+      onDoubleTap: () => closeOtherDecks(index),
       child: DragTarget(
         builder: (context, List<PlayingCard> candidateData, rejectedData) {
           return decks[index];
@@ -61,7 +134,7 @@ class _GameState extends State<Game> {
           return !decks[index].deck.contains(data);
         },
         onAccept: (data) async {
-          if (centerCards.contains(data)) {
+          if (centerCards.cards.length != 4) {
             var result = await showDialog<PlayingCard>(
                 context: context,
                 barrierDismissible: true,
@@ -72,15 +145,22 @@ class _GameState extends State<Game> {
                         keys[index].currentState.widget.deck, index),
                   );
                 });
-            if (result != null) {
+            if (result != null)
               setState(() {
-                centerCards.remove(data);
-                centerCards.add(result);
+//                centerCards.remove(data);
+//                centerCards.add(result);
+                centerKey.currentState.removeCard(data);
+                centerKey.currentState.addCard(result);
                 keys[index].currentState.removeCard(result);
                 keys[index].currentState.addCard(data);
+//                ref
+//                    .child("centerCards")
+//                    .set(PlayingCard.toDatabase(centerCards));
               });
-            } else
-              print('no result');
+            else {
+              centerKey.currentState.addCard(centerKey.currentState.tempCard);
+              centerKey.currentState.tempCard = null;
+            }
           } else {
             for (int i = 0; i < keys.length; i++) {
               if (decks[i].deck.contains(data))
@@ -91,13 +171,6 @@ class _GameState extends State<Game> {
         },
       ),
     );
-  }
-
-  List<Widget> _generateCenterCards() {
-    List<Widget> _result = [];
-    for (int i = 0; i < centerCards.length; i++)
-      _result.add(centerCards[i].buildCard(true));
-    return _result;
   }
 
   List<Widget> _generateDialogOptions(List<PlayingCard> deck, int deckIndex) {
@@ -117,6 +190,7 @@ class _GameState extends State<Game> {
   }
 
   void closeOtherDecks(int openingIndex) {
+    _checkForWinner();
     for (int i = 0; i < keys.length; i++)
       if (i == openingIndex)
         keys[i].currentState.animateDeck(open: true);
@@ -124,9 +198,26 @@ class _GameState extends State<Game> {
         keys[i].currentState.animateDeck(open: false);
   }
 
+  void _checkForWinner() {
+    bool winner = true;
+    for (int i = 0; i < decks.length; i++) {
+      if (winner) winner = keys[i].currentState.stackComplete;
+    }
+
+    print(winner);
+
+//    if (winner) {
+//      ref.child('state').set(DatabaseStates.FINISH);
+//      Navigator.popUntil(context, ModalRoute.withName("/"));
+//      Navigator.pushReplacementNamed(context, "/Winning",
+//          arguments: WinningArgs(playerWon: true));
+//    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+//    if (keys.length != 0) _checkForWinner();
 
     return Scaffold(
       appBar: AppBar(
@@ -146,9 +237,9 @@ class _GameState extends State<Game> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
-                        deckBuilder(0),
-                        deckBuilder(1),
-                        deckBuilder(2),
+                        _deckBuilder(0),
+                        _deckBuilder(1),
+                        _deckBuilder(2),
                       ],
                     ),
                   ),
@@ -162,9 +253,9 @@ class _GameState extends State<Game> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
-                        deckBuilder(3),
-                        deckBuilder(4),
-                        deckBuilder(5),
+                        _deckBuilder(3),
+                        _deckBuilder(4),
+                        _deckBuilder(5),
                       ],
                     ),
                   ),
@@ -178,28 +269,7 @@ class _GameState extends State<Game> {
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: DragTarget(
-                      builder: (context, List<PlayingCard> candidateData,
-                          rejectedData) {
-                        return SingleChildScrollView(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: _generateCenterCards(),
-                          ),
-                        );
-                      },
-                      onWillAccept: (data) {
-                        return centerCards.length < 4 &&
-                            !centerCards.contains(data);
-                      },
-                      onAccept: (data) {
-                        for (int i = 0; i < keys.length; i++) {
-                          if (decks[i].deck.contains(data))
-                            keys[i].currentState.removeCard(data);
-                        }
-                        centerCards.add(data);
-                      },
-                    ),
+                    child: centerCards,
                   ),
                 ),
               ),
@@ -209,4 +279,11 @@ class _GameState extends State<Game> {
       ),
     );
   }
+}
+
+class GameArgs {
+  final String uuid;
+  final bool host;
+
+  GameArgs({this.uuid, this.host});
 }
