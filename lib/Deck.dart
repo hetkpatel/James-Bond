@@ -103,9 +103,12 @@ class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      overflow: Overflow.visible,
-      children: _createStackBlock(widget.deck),
+    return Container(
+      height: 155.0 + (SPACING * (widget.deck.length - 1)),
+      child: Stack(
+        overflow: Overflow.visible,
+        children: _createStackBlock(widget.deck),
+      ),
     );
   }
 }

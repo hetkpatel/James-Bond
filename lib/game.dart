@@ -23,7 +23,6 @@ class _GameState extends State<Game> {
   DatabaseReference ref = FirebaseDatabase.instance.reference();
   List<Deck> decks = [];
 
-//  List<PlayingCard> centerCards = [];
   GlobalKey<CenterCardsState> centerKey = GlobalKey();
   CenterCards centerCards;
 
@@ -58,15 +57,20 @@ class _GameState extends State<Game> {
       List<PlayingCard> pack24 = [];
       for (int i = 0; i < 24; i++)
         pack24.add(fullDeck.removeAt(Random().nextInt(fullDeck.length)));
-      ref.child("24Pack").set(PlayingCard.toDatabase(pack24));
+      ref.child("24Pack").set(PlayingCard.toDatabase24(pack24));
+
+      Map<String, PlayingCard> centerDeck = {};
+      for (int i = 0; i < fullDeck.length; i++)
+        centerDeck["card$i"] = fullDeck[i];
 
       // Assign the remaining 4 cards as the cards in the center
       centerCards = CenterCards(
         key: centerKey,
-        cards: fullDeck,
+        cards: centerDeck,
         uuid: widget.uuid,
+        host: true,
       );
-      ref.child("centerCards").set(PlayingCard.toDatabase(centerCards.cards));
+      ref.child("centerCards").set(PlayingCard.toDatabaseCenter(centerCards.cards));
     } else {
       // TODO: get centerCards and 24-pack from database
       ref.child("24Pack").once().then((pack) {
@@ -91,14 +95,16 @@ class _GameState extends State<Game> {
 
       ref.child("centerCards").once().then((center) {
         var stringPack = center.value;
-        List<PlayingCard> cards = [];
+        Map<String, PlayingCard> cards = {};
         for (int i = 0; i < stringPack.length; i++)
-          cards.add(PlayingCard.fromString(stringPack[i]));
+          cards["card$i"] = PlayingCard.fromString(stringPack["card$i"]);
+
         setState(() {
           centerCards = CenterCards(
             key: centerKey,
             cards: cards,
             uuid: widget.uuid,
+            host: false,
           );
         });
       });
@@ -134,7 +140,7 @@ class _GameState extends State<Game> {
           return !decks[index].deck.contains(data);
         },
         onAccept: (data) async {
-          if (centerCards.cards.length != 4) {
+          if (centerKey.currentState.tempCard == data) {
             var result = await showDialog<PlayingCard>(
                 context: context,
                 barrierDismissible: true,
@@ -147,20 +153,14 @@ class _GameState extends State<Game> {
                 });
             if (result != null)
               setState(() {
-//                centerCards.remove(data);
-//                centerCards.add(result);
                 centerKey.currentState.removeCard(data);
                 centerKey.currentState.addCard(result);
                 keys[index].currentState.removeCard(result);
                 keys[index].currentState.addCard(data);
-//                ref
-//                    .child("centerCards")
-//                    .set(PlayingCard.toDatabase(centerCards));
               });
-            else {
+            else
               centerKey.currentState.addCard(centerKey.currentState.tempCard);
-              centerKey.currentState.tempCard = null;
-            }
+            centerKey.currentState.tempCard = null;
           } else {
             for (int i = 0; i < keys.length; i++) {
               if (decks[i].deck.contains(data))
@@ -168,6 +168,8 @@ class _GameState extends State<Game> {
             }
             keys[index].currentState.addCard(data);
           }
+
+          _checkForWinner();
         },
       ),
     );
@@ -190,7 +192,6 @@ class _GameState extends State<Game> {
   }
 
   void closeOtherDecks(int openingIndex) {
-    _checkForWinner();
     for (int i = 0; i < keys.length; i++)
       if (i == openingIndex)
         keys[i].currentState.animateDeck(open: true);
@@ -204,14 +205,14 @@ class _GameState extends State<Game> {
       if (winner) winner = keys[i].currentState.stackComplete;
     }
 
-    print(winner);
+    print("Winner: $winner");
 
-//    if (winner) {
-//      ref.child('state').set(DatabaseStates.FINISH);
-//      Navigator.popUntil(context, ModalRoute.withName("/"));
-//      Navigator.pushReplacementNamed(context, "/Winning",
-//          arguments: WinningArgs(playerWon: true));
-//    }
+    if (winner) {
+      ref.child('state').set(DatabaseStates.FINISH);
+      Navigator.popUntil(context, ModalRoute.withName("/"));
+      Navigator.pushReplacementNamed(context, "/Winning",
+          arguments: WinningArgs(playerWon: true));
+    }
   }
 
   @override
@@ -231,11 +232,12 @@ class _GameState extends State<Game> {
             children: <Widget>[
               Expanded(
                 child: Container(
-                  height: 240,
+//                  height: 240,
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         _deckBuilder(0),
                         _deckBuilder(1),
@@ -247,11 +249,12 @@ class _GameState extends State<Game> {
               ),
               Expanded(
                 child: Container(
-                  height: 240,
+//                  height: 240,
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         _deckBuilder(3),
                         _deckBuilder(4),

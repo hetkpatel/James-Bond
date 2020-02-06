@@ -4,10 +4,11 @@ import 'package:james_bond/PlayingCard.dart';
 
 // ignore: must_be_immutable
 class CenterCards extends StatefulWidget {
-  List<PlayingCard> cards;
+  Map<String, PlayingCard> cards;
   String uuid;
+  bool host;
 
-  CenterCards({@required Key key, @required this.cards, @required this.uuid})
+  CenterCards({@required Key key, @required this.cards, @required this.uuid, @required this.host})
       : super(key: key);
 
   @override
@@ -16,6 +17,7 @@ class CenterCards extends StatefulWidget {
 
 class CenterCardsState extends State<CenterCards> {
   DatabaseReference ref = FirebaseDatabase.instance.reference();
+  String key;
   PlayingCard tempCard;
 
   @override
@@ -32,66 +34,44 @@ class CenterCardsState extends State<CenterCards> {
     ref.once().then((center) {
       var stringPack = center.value;
       widget.cards.clear();
-      for (int i = 0; i < stringPack.length; i++)
-        widget.cards.add(PlayingCard.fromString(stringPack[i]));
+      for (int i = 0; i < 4; i++)
+        if (stringPack["card$i"] != null)
+          widget.cards["card$i"] = PlayingCard.fromString(stringPack["card$i"]);
       setState(() {});
     });
   }
 
-  void removeCard(PlayingCard card) {
-    ref.once().then((cards) {
-      var stringPack = cards.value;
-      List<String> center = [];
-      for (int i = 0; i < stringPack.length; i++) center.add(stringPack[i]);
-
-      center.removeAt(center.indexOf(card.retriveStringFormat()));
-
-      ref.set(center);
-
-      setState(() {
-        widget.cards.remove(card);
-      });
-    });
+  void addCard(PlayingCard card) {
+    ref.child(key).set(card.retriveStringFormat());
   }
 
-  void addCard(PlayingCard card) {
-    ref.once().then((cards) {
-      var stringPack = cards.value;
-      List<String> center = [];
-      for (int i = 0; i < stringPack.length; i++) center.add(stringPack[i]);
-
-      center.add(card.retriveStringFormat());
-
-      ref.set(center);
-
-      setState(() {
-        widget.cards.add(card);
-      });
-    });
+  void removeCard(PlayingCard card) {
+    ref.child(key).remove();
   }
 
   List<Widget> _generateCenterCards() {
     List<Widget> _result = [];
-    for (int i = 0; i < widget.cards.length; i++) {
-      _result.add(
-        Draggable(
-//          hapticFeedbackOnStart: true,
-          data: widget.cards[i],
-          onDragStarted: () {
-            tempCard = widget.cards[i];
-            removeCard(widget.cards[i]);
-          },
-          onDraggableCanceled: (vel, off) {
-            addCard(tempCard);
-            tempCard = null;
-          },
-          feedback: widget.cards[i].buildCard(
-              flipped: true, stackFinished: false, partOfCenter: true),
-          child: widget.cards[i].buildCard(
-              flipped: true, stackFinished: false, partOfCenter: true),
-        ),
-      );
-    }
+    for (int i = 0; i < 4; i++)
+      if (widget.cards["card$i"] != null)
+        _result.add(
+          Draggable(
+            data: widget.cards["card$i"],
+            onDragStarted: () {
+              tempCard = widget.cards["card$i"];
+              key = "card$i";
+              removeCard(widget.cards["card$i"]);
+            },
+            onDraggableCanceled: (vel, off) {
+              addCard(tempCard);
+              key = null;
+              tempCard = null;
+            },
+            feedback: widget.cards["card$i"].buildCard(
+                flipped: true, stackFinished: false, partOfCenter: true),
+            child: widget.cards["card$i"].buildCard(
+                flipped: true, stackFinished: false, partOfCenter: true),
+          ),
+        );
     return _result;
   }
 

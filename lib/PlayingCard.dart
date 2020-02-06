@@ -87,12 +87,15 @@ class PlayingCard {
     );
   }
 
-  Widget buildCard({@required bool flipped, @required bool stackFinished, bool partOfCenter}) {
+  Widget buildCard(
+      {@required bool flipped,
+      @required bool stackFinished,
+      bool partOfCenter}) {
     if (partOfCenter == null) partOfCenter = false;
     if (flipped)
       return !partOfCenter
-          ? Draggable<PlayingCard>(
-//              hapticFeedbackOnStart: true,
+          ? LongPressDraggable<PlayingCard>(
+              hapticFeedbackOnStart: true,
               data: this,
               feedback: _generateCard(flipped, stackFinished),
               child: _generateCard(flipped, stackFinished))
@@ -137,11 +140,18 @@ class PlayingCard {
     return CardSuitString.SUITS[this.suit.index] + "|" + this.value;
   }
 
-  static List<String> toDatabase(List<PlayingCard> stack) {
+  static List<String> toDatabase24(List<PlayingCard> stack) {
     List<String> result = [];
     for (int i = 0; i < stack.length; i++)
       result.add(
           CardSuitString.SUITS[stack[i].suit.index] + "|" + stack[i].value);
+    return result;
+  }
+
+  static Map<String, String> toDatabaseCenter(Map<String, PlayingCard> stack) {
+    Map<String, String> result = {};
+    for (int i = 0;i<stack.length;i++)
+      result["card$i"] = CardSuitString.SUITS[stack["card$i"].suit.index] + "|" + stack["card$i"].value;
     return result;
   }
 }
