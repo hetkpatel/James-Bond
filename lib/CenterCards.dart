@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:james_bond/PlayingCard.dart';
@@ -8,8 +10,12 @@ class CenterCards extends StatefulWidget {
   String uuid;
   bool host;
 
-  CenterCards({@required Key key, @required this.cards, @required this.uuid, @required this.host})
-      : super(key: key);
+  CenterCards({
+    @required Key key,
+    @required this.cards,
+    @required this.uuid,
+    @required this.host,
+  }) : super(key: key);
 
   @override
   CenterCardsState createState() => CenterCardsState();
@@ -23,15 +29,53 @@ class CenterCardsState extends State<CenterCards> {
   @override
   void initState() {
     super.initState();
-    ref = ref.child('${widget.uuid}/centerCards');
+    ref = ref.child(widget.uuid);
 
-    ref.onChildAdded.listen((event) => _updateCenterCards());
-    ref.onChildRemoved.listen((event) => _updateCenterCards());
-    ref.onChildChanged.listen((event) => _updateCenterCards());
+    ref
+        .child('centerCards')
+        .onChildAdded
+        .listen((event) => _updateCenterCards());
+    ref
+        .child('centerCards')
+        .onChildRemoved
+        .listen((event) => _updateCenterCards());
+    ref
+        .child('centerCards')
+        .onChildChanged
+        .listen((event) => _updateCenterCards());
+
+    ref
+        .child('players/${widget.host ? 'player2' : 'player1'}')
+        .onValue
+        .listen((card) {
+      if (card.snapshot.value != "nullCard" && tempCard != null) {
+        if (card.snapshot.value == tempCard.retriveStringFormat()) {
+          print('both are the same');
+          if (widget.host) {
+            if (Random().nextBool()) {
+              key = null;
+              tempCard = null;
+            } else {
+              ref.child('players/player2').set('nullCard');
+            }
+          }
+        }
+      }
+    });
+
+    ref
+        .child('players/${widget.host ? 'player1' : 'player2'}')
+        .onValue
+        .listen((myCard) {
+      if (tempCard != null) {
+        key = null;
+        tempCard = null;
+      }
+    });
   }
 
   void _updateCenterCards() {
-    ref.once().then((center) {
+    ref.child('centerCards').once().then((center) {
       var stringPack = center.value;
       widget.cards.clear();
       for (int i = 0; i < 4; i++)
@@ -42,11 +86,15 @@ class CenterCardsState extends State<CenterCards> {
   }
 
   void addCard(PlayingCard card) {
-    ref.child(key).set(card.retriveStringFormat());
+    ref.child('centerCards').child(key).set(card.retriveStringFormat());
+    ref.child('players/${widget.host ? 'player1' : 'player2'}').set('nullCard');
   }
 
   void removeCard(PlayingCard card) {
-    ref.child(key).remove();
+    ref.child('centerCards').child(key).remove();
+    ref
+        .child('players/${widget.host ? 'player1' : 'player2'}')
+        .set(card.retriveStringFormat());
   }
 
   List<Widget> _generateCenterCards() {
