@@ -27,6 +27,7 @@ class JamesBond extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
+        darkTheme: ThemeData.dark(),
         home: Welcome(),
 //        home: WinningScreen(),
         routes: <String, WidgetBuilder>{

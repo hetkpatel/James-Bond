@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:james_bond/PlayingCard.dart';
+import 'package:vibrate/vibrate.dart';
 
 // ignore: must_be_immutable
 class CenterCards extends StatefulWidget {
@@ -50,15 +51,13 @@ class CenterCardsState extends State<CenterCards> {
         .listen((card) {
       if (card.snapshot.value != "nullCard" && tempCard != null) {
         if (card.snapshot.value == tempCard.retriveStringFormat()) {
-          print('both are the same');
-          if (widget.host) {
-            if (Random().nextBool()) {
-              key = null;
-              tempCard = null;
-            } else {
-              ref.child('players/player2').set('nullCard');
-            }
-          }
+          if (widget.host) if (Random().nextBool()) {
+            key = null;
+            tempCard = null;
+            ref.child('players/player1').set('removeCard');
+            vibrateDev();
+          } else
+            ref.child('players/player2').set('removeCard');
         }
       }
     });
@@ -67,11 +66,21 @@ class CenterCardsState extends State<CenterCards> {
         .child('players/${widget.host ? 'player1' : 'player2'}')
         .onValue
         .listen((myCard) {
-      if (tempCard != null) {
+      if (myCard.snapshot.value == 'removeCard') {
         key = null;
         tempCard = null;
+        ref
+            .child('players/${widget.host ? 'player1' : 'player2'}')
+            .set('nullCard');
+        vibrateDev();
       }
     });
+  }
+
+  void vibrateDev() async {
+    if (await Vibrate.canVibrate) {
+      Vibrate.vibrate();
+    }
   }
 
   void _updateCenterCards() {
@@ -97,7 +106,7 @@ class CenterCardsState extends State<CenterCards> {
         .set(card.retriveStringFormat());
   }
 
-  List<Widget> _generateCenterCards() {
+  List<Widget> _generateCenterCards(var context) {
     List<Widget> _result = [];
     for (int i = 0; i < 4; i++)
       if (widget.cards["card$i"] != null)
@@ -115,9 +124,17 @@ class CenterCardsState extends State<CenterCards> {
               tempCard = null;
             },
             feedback: widget.cards["card$i"].buildCard(
-                flipped: true, stackFinished: false, partOfCenter: true),
+              context: context,
+              flipped: true,
+              stackFinished: false,
+              partOfCenter: true,
+            ),
             child: widget.cards["card$i"].buildCard(
-                flipped: true, stackFinished: false, partOfCenter: true),
+              context: context,
+              flipped: true,
+              stackFinished: false,
+              partOfCenter: true,
+            ),
           ),
         );
     return _result;
@@ -127,7 +144,7 @@ class CenterCardsState extends State<CenterCards> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: _generateCenterCards(),
+      children: _generateCenterCards(context),
     );
   }
 }

@@ -31,7 +31,7 @@ class PlayingCard {
     this.value = value;
   }
 
-  Widget _generateCard(bool flipped, bool stackFinished) {
+  Widget _generateCard(var context, bool flipped, bool stackFinished) {
     return SizedBox(
       width: 100.0,
       height: 155.0,
@@ -51,17 +51,20 @@ class PlayingCard {
                               color: suit == CardSuit.HEART ||
                                       suit == CardSuit.DIAMOND
                                   ? Colors.red
-                                  : Colors.black),
+                                  : MediaQuery.of(context).platformBrightness ==
+                                          Brightness.light
+                                      ? Colors.black
+                                      : Colors.white),
                         ),
                         SizedBox(width: 8.0),
-                        _getIcon(_IconSize.SMALL)
+                        _getIcon(context, _IconSize.SMALL)
                       ],
                     ),
-                    _getIcon(_IconSize.LARGE),
+                    _getIcon(context, _IconSize.LARGE),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
-                        _getIcon(_IconSize.SMALL),
+                        _getIcon(context, _IconSize.SMALL),
                         SizedBox(width: 8.0),
                         Text(
                           value.toUpperCase(),
@@ -70,7 +73,10 @@ class PlayingCard {
                               color: suit == CardSuit.HEART ||
                                       suit == CardSuit.DIAMOND
                                   ? Colors.red
-                                  : Colors.black),
+                                  : MediaQuery.of(context).platformBrightness ==
+                                          Brightness.light
+                                      ? Colors.black
+                                      : Colors.white),
                         ),
                       ],
                     ),
@@ -88,7 +94,8 @@ class PlayingCard {
   }
 
   Widget buildCard(
-      {@required bool flipped,
+      {@required context,
+      @required bool flipped,
       @required bool stackFinished,
       bool partOfCenter}) {
     if (partOfCenter == null) partOfCenter = false;
@@ -97,27 +104,33 @@ class PlayingCard {
           ? LongPressDraggable<PlayingCard>(
               hapticFeedbackOnStart: true,
               data: this,
-              feedback: _generateCard(flipped, stackFinished),
-              child: _generateCard(flipped, stackFinished))
-          : _generateCard(flipped, stackFinished);
+              feedback: _generateCard(context, flipped, stackFinished),
+              child: _generateCard(context, flipped, stackFinished))
+          : _generateCard(context, flipped, stackFinished);
     else
-      return _generateCard(flipped, stackFinished);
+      return _generateCard(context, flipped, stackFinished);
   }
 
   // TODO: Change icons to be more similar
   // TODO: Spade SVG needs to be changed
-  SvgPicture _getIcon(_IconSize size) {
+  SvgPicture _getIcon(var context, _IconSize size) {
     switch (suit) {
       case CardSuit.SPADE:
         return SvgPicture.asset(
           "assets/spade.svg",
           width: size == _IconSize.LARGE ? 52.0 : 12.0,
+          color: MediaQuery.of(context).platformBrightness == Brightness.dark
+              ? Colors.white
+              : null,
         );
         break;
       case CardSuit.CLUB:
         return SvgPicture.asset(
           "assets/club.svg",
           width: size == _IconSize.LARGE ? 52.0 : 12.0,
+          color: MediaQuery.of(context).platformBrightness == Brightness.dark
+              ? Colors.white
+              : null,
         );
         break;
       case CardSuit.HEART:
@@ -150,8 +163,10 @@ class PlayingCard {
 
   static Map<String, String> toDatabaseCenter(Map<String, PlayingCard> stack) {
     Map<String, String> result = {};
-    for (int i = 0;i<stack.length;i++)
-      result["card$i"] = CardSuitString.SUITS[stack["card$i"].suit.index] + "|" + stack["card$i"].value;
+    for (int i = 0; i < stack.length; i++)
+      result["card$i"] = CardSuitString.SUITS[stack["card$i"].suit.index] +
+          "|" +
+          stack["card$i"].value;
     return result;
   }
 }

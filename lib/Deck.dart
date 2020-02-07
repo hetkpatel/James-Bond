@@ -39,7 +39,7 @@ class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
       });
   }
 
-  List<Widget> _createStackBlock(List<PlayingCard> stack) {
+  List<Widget> _createStackBlock(var context, List<PlayingCard> stack) {
     List<Widget> result = [];
     if (stack.length == 0)
       result.add(
@@ -66,8 +66,11 @@ class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
         result.add(
           Positioned(
             top: i == 0 ? null : animation.value * i,
-            child:
-                stack[i].buildCard(flipped: flip, stackFinished: stackComplete),
+            child: stack[i].buildCard(
+              context: context,
+              flipped: flip,
+              stackFinished: stackComplete,
+            ),
           ),
         );
       }
@@ -107,7 +110,7 @@ class DeckState extends State<Deck> with SingleTickerProviderStateMixin {
       height: 155.0 + (SPACING * (widget.deck.length - 1)),
       child: Stack(
         overflow: Overflow.visible,
-        children: _createStackBlock(widget.deck),
+        children: _createStackBlock(context, widget.deck),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -30,6 +31,9 @@ class _GameState extends State<Game> {
   void initState() {
     super.initState();
     ref = ref.child(widget.uuid);
+
+    Timer timer = Timer.periodic(
+        Duration(milliseconds: 500), (timer) => _checkForWinner());
 
     if (widget.host) {
       // TODO: Perform a better way to divide the cards and make it more even and random
@@ -70,7 +74,9 @@ class _GameState extends State<Game> {
         uuid: widget.uuid,
         host: true,
       );
-      ref.child("centerCards").set(PlayingCard.toDatabaseCenter(centerCards.cards));
+      ref
+          .child("centerCards")
+          .set(PlayingCard.toDatabaseCenter(centerCards.cards));
     } else {
       // TODO: get centerCards and 24-pack from database
       ref.child("24Pack").once().then((pack) {
@@ -110,21 +116,20 @@ class _GameState extends State<Game> {
       });
     }
 
-    ref.child('state').onChildChanged.listen((state) {
+    ref.child('state').onValue.listen((state) {
       if (state.snapshot.value == DatabaseStates.FINISH) {
-        Navigator.popUntil(context, ModalRoute.withName("/"));
         Navigator.pushReplacementNamed(context, "/Winning",
             arguments: WinningArgs(playerWon: false));
       }
     });
   }
 
-//  @override
-//  void dispose() {
-//    super.dispose();
-//    DatabaseReference database = FirebaseDatabase.instance.reference();
-//    database.child(widget.uuid).remove();
-//  }
+  @override
+  void dispose() {
+    super.dispose();
+    DatabaseReference database = FirebaseDatabase.instance.reference();
+    database.child(widget.uuid).remove();
+  }
 
   Widget _deckBuilder(int index) {
     return GestureDetector(
@@ -140,6 +145,7 @@ class _GameState extends State<Game> {
           return !decks[index].deck.contains(data);
         },
         onAccept: (data) async {
+//          print(centerKey.currentState.tempCard.retriveStringFormat());
           if (centerKey.currentState.tempCard == data) {
             var result = await showDialog<PlayingCard>(
                 context: context,
@@ -168,8 +174,6 @@ class _GameState extends State<Game> {
             }
             keys[index].currentState.addCard(data);
           }
-
-          _checkForWinner();
         },
       ),
     );
@@ -201,15 +205,11 @@ class _GameState extends State<Game> {
 
   void _checkForWinner() {
     bool winner = true;
-    for (int i = 0; i < decks.length; i++) {
+    for (int i = 0; i < decks.length; i++)
       if (winner) winner = keys[i].currentState.stackComplete;
-    }
-
-    print("Winner: $winner");
 
     if (winner) {
       ref.child('state').set(DatabaseStates.FINISH);
-      Navigator.popUntil(context, ModalRoute.withName("/"));
       Navigator.pushReplacementNamed(context, "/Winning",
           arguments: WinningArgs(playerWon: true));
     }
@@ -218,7 +218,6 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-//    if (keys.length != 0) _checkForWinner();
 
     return Scaffold(
       appBar: AppBar(
