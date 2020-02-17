@@ -70,7 +70,8 @@ class _NewRoomState extends State<NewRoom> {
     database.child('$uuid/state').set(DatabaseStates.DEAL_CARDS);
     destroy = false;
     Navigator.popUntil(context, ModalRoute.withName("/"));
-    Navigator.pushReplacementNamed(context, "/Game", arguments: GameArgs(uuid: uuid, host: true));
+    Navigator.pushReplacementNamed(context, "/Game",
+        arguments: GameArgs(uuid: uuid, host: true));
   }
 
   @override
@@ -94,26 +95,33 @@ class _NewRoomState extends State<NewRoom> {
         padding: const EdgeInsets.all(8.0),
         child: new Column(
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Text(
-                  code[0],
-                  style: TextStyle(fontSize: 100.0),
-                ),
-                Text(
-                  code[1],
-                  style: TextStyle(fontSize: 100.0),
-                ),
-                Text(
-                  code[2],
-                  style: TextStyle(fontSize: 100.0),
-                ),
-                Text(
-                  code[3],
-                  style: TextStyle(fontSize: 100.0),
-                )
-              ],
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Row(
+                children: <Widget>[
+                  Text(
+                    code[0],
+                    style:
+                        TextStyle(fontSize: 100.0, fontFamily: "Special Elite"),
+                  ),
+                  Text(
+                    code[1],
+                    style:
+                        TextStyle(fontSize: 100.0, fontFamily: "Special Elite"),
+                  ),
+                  Text(
+                    code[2],
+                    style:
+                        TextStyle(fontSize: 100.0, fontFamily: "Special Elite"),
+                  ),
+                  Text(
+                    code[3],
+                    style:
+                        TextStyle(fontSize: 100.0, fontFamily: "Special Elite"),
+                  )
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              ),
             ),
             RaisedButton(
               onPressed: !play ? null : () => startGame(),
@@ -122,33 +130,36 @@ class _NewRoomState extends State<NewRoom> {
               child: Text('Play'),
             ),
             Center(
-              child: Text('The game requires 2 people to play'),
+              child: Text(play
+                  ? 'The game requires 2 people to play'
+                  : 'Press PLAY to begin'),
             ),
             Expanded(
-                child: StreamBuilder(
-              stream: database.child('$uuid/players').onValue,
-              builder: (BuildContext context, AsyncSnapshot<Event> snapshot) {
-                if (snapshot.hasData) {
-                  var players =
-                      Map.from(snapshot.data.snapshot.value).values.toList();
-                  return new ListView.builder(
-                    itemBuilder: (BuildContext context, int index) {
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(players[index]),
-                        ),
-                      );
-                    },
-                    itemCount: players.length,
-                    scrollDirection: Axis.vertical,
-                    padding: EdgeInsets.all(8.0),
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            ))
+              child: StreamBuilder(
+                stream: database.child('$uuid/players').onValue,
+                builder: (BuildContext context, AsyncSnapshot<Event> snapshot) {
+                  if (snapshot.hasData) {
+                    var players =
+                        Map.from(snapshot.data.snapshot.value).values.toList();
+                    return new ListView.builder(
+                      itemBuilder: (BuildContext context, int index) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(players[index]),
+                          ),
+                        );
+                      },
+                      itemCount: players.length,
+                      scrollDirection: Axis.vertical,
+                      padding: EdgeInsets.all(8.0),
+                    );
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
+            ),
           ],
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,

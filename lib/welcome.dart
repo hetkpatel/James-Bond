@@ -6,16 +6,19 @@ class Welcome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('James Bond'),
+        title: Text('Welcome'),
       ),
       body: ConnectivityWidgetWrapper(
         disableInteraction: true,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            Text(
-              'James Bond',
-              style: TextStyle(fontSize: 50.0),
+            Container(
+              child: Image.asset(
+                'assets/james_bond_logo.png',
+                height: 200,
+                fit: BoxFit.fitWidth,
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -26,7 +29,12 @@ class Welcome extends StatelessWidget {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text('Create a new game'),
+                        child: Text(
+                          'Create a new game',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 20.0, fontFamily: "Special Elite"),
+                        ),
                       ),
                       Container(
                           width: 100.0,
@@ -49,7 +57,7 @@ class Welcome extends StatelessWidget {
                 Container(
                   color: Colors.grey,
                   width: 1,
-                  height: 300,
+                  height: 200,
                   foregroundDecoration:
                       BoxDecoration(borderRadius: BorderRadius.circular(8.0)),
                 ),
@@ -59,7 +67,12 @@ class Welcome extends StatelessWidget {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text('Join a game'),
+                        child: Text(
+                          'Join a game',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 20.0, fontFamily: "Special Elite"),
+                        ),
                       ),
                       Container(
                           width: 100.0,

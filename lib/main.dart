@@ -6,30 +6,26 @@
 import 'package:connectivity_wrapper/connectivity_wrapper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:james_bond/game.dart';
 import 'package:james_bond/joinRoom.dart';
 import 'package:james_bond/newRoom.dart';
 import 'package:james_bond/welcome.dart';
 import 'package:james_bond/winningScreen.dart';
 
-void main() {
-  SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
-  runApp(JamesBond());
-}
+void main() => runApp(JamesBond());
 
 class JamesBond extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConnectivityAppWrapper(
       app: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'James Bond',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         darkTheme: ThemeData.dark(),
         home: Welcome(),
-//        home: WinningScreen(),
         routes: <String, WidgetBuilder>{
           "/NewRoom": (BuildContext context) => new NewRoom(),
           "/JoinRoom": (BuildContext context) => new JoinRoom(),

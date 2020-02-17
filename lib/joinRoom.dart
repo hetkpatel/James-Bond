@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:james_bond/DatabaseStates.dart';
 import 'package:james_bond/Player.dart';
 import 'package:james_bond/game.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 class JoinRoom extends StatefulWidget {
   @override
@@ -13,75 +14,48 @@ class JoinRoom extends StatefulWidget {
 }
 
 class _JoinRoomState extends State<JoinRoom> {
-  FocusNode _fn1 = new FocusNode(),
-      _fn2 = new FocusNode(),
-      _fn3 = new FocusNode(),
-      _fn4 = new FocusNode();
   final database = FirebaseDatabase.instance.reference();
-  var code = new List(4), uuid = "";
+  var uuid = "";
   var joinedRoom = false, playerName = "";
   var destroy = true;
+  TextEditingController controller = TextEditingController();
 
-  void onTypingCode(character, currentCurPos) {
-    code[currentCurPos] = character;
-    switch (currentCurPos) {
-      case 0:
-        if (character != "") FocusScope.of(context).requestFocus(_fn2);
-        break;
-      case 1:
-        if (character != "")
-          FocusScope.of(context).requestFocus(_fn3);
-        else
-          FocusScope.of(context).requestFocus(_fn1);
-        break;
-      case 2:
-        if (character != "")
-          FocusScope.of(context).requestFocus(_fn4);
-        else
-          FocusScope.of(context).requestFocus(_fn2);
-        break;
-      case 3:
-        if (character != "")
-          joinRoom();
-        else
-          FocusScope.of(context).requestFocus(_fn3);
-    }
+  @override
+  void initState() {
+    super.initState();
+    print(destroy);
   }
 
-  void joinRoom() {
-    var passCode = "";
-    for (var i = 0; i < code.length; i++) passCode += code[i];
-
-    if (passCode.length == 4) {
-      passCode = passCode.toLowerCase();
-      database.child('rooms/$passCode').once().then((DataSnapshot snapshot) {
-        if (snapshot.value != null) {
-          setState(() {
-            joinedRoom = true;
-            uuid = snapshot.value;
-            database
-                .child('$uuid/players')
-                .once()
-                .then((DataSnapshot playersSS) {
-              var listOfPlayers = Map.from(playersSS.value);
-              listOfPlayers.addAll({
-                "player2": Player.NAMES[Random().nextInt(Player.NAMES.length)]
-              });
-              database.child(uuid).update({'players': listOfPlayers});
-              listenRoomState();
+  void joinRoom(passCode) {
+    passCode = passCode.toLowerCase();
+    database.child('rooms/$passCode').once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
+        setState(() {
+          joinedRoom = true;
+          uuid = snapshot.value;
+          database.child('$uuid/players').once().then((DataSnapshot playersSS) {
+            var listOfPlayers = Map.from(playersSS.value);
+            listOfPlayers.addAll({
+              "player2": Player.NAMES[Random().nextInt(Player.NAMES.length)]
             });
+            database.child(uuid).update({'players': listOfPlayers});
+            listenRoomState();
           });
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   void listenRoomState() {
     database.child("$uuid/state").onValue.listen((Event event) {
+      print(event.snapshot.value);
       if (event.snapshot.value == DatabaseStates.DEAL_CARDS) {
         destroy = false;
         Navigator.popUntil(context, ModalRoute.withName("/"));
-        Navigator.pushReplacementNamed(context, "/Game", arguments: GameArgs(uuid: uuid, host: false));
+        Navigator.pushReplacementNamed(context, "/Game",
+            arguments: GameArgs(uuid: uuid, host: false));
+      } else if (event.snapshot.value == null) {
+        Navigator.popUntil(context, ModalRoute.withName("/"));
       }
     });
   }
@@ -100,64 +74,29 @@ class _JoinRoomState extends State<JoinRoom> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: <Widget>[
-            new Row(
-              children: <Widget>[
-                new Flexible(
-                  child: new TextField(
-                    autocorrect: false,
-                    autofocus: true,
-                    enabled: !joinedRoom,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 100),
-                    focusNode: _fn1,
-                    onChanged: (String str) => onTypingCode(str, 0),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [LengthLimitingTextInputFormatter(1)],
-                  ),
-                ),
-                Container(width: 5),
-                new Flexible(
-                  child: new TextField(
-                    autocorrect: false,
-                    enabled: !joinedRoom,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 100),
-                    focusNode: _fn2,
-                    onChanged: (String str) => onTypingCode(str, 1),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [LengthLimitingTextInputFormatter(1)],
-                  ),
-                ),
-                Container(width: 5),
-                new Flexible(
-                  child: new TextField(
-                    autocorrect: false,
-                    enabled: !joinedRoom,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 100),
-                    focusNode: _fn3,
-                    onChanged: (String str) => onTypingCode(str, 2),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [LengthLimitingTextInputFormatter(1)],
-                  ),
-                ),
-                Container(width: 5),
-                new Flexible(
-                    child: new TextField(
-                  autocorrect: false,
-                  enabled: !joinedRoom,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 100),
-                  focusNode: _fn4,
-                  onChanged: (String str) => onTypingCode(str, 3),
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [LengthLimitingTextInputFormatter(1)],
-                ))
-              ],
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            PinCodeTextField(
+              length: 4,
+              shape: PinCodeFieldShape.underline,
+              animationType: AnimationType.slide,
+              fieldWidth: 50,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              backgroundColor: Color.fromRGBO(0, 0, 0, 0.01),
+              autoFocus: true,
+              textStyle: TextStyle(
+                  color: MediaQuery.of(context).platformBrightness ==
+                          Brightness.light
+                      ? Colors.black
+                      : Colors.white,
+                  fontSize: 35.0,
+                  fontFamily: "Special Elite"),
+              onChanged: (value) {
+                if (value.length == 4) {
+                  joinRoom(value);
+                }
+              },
+              enabled: !joinedRoom,
             ),
             RaisedButton(
-              // FIXME: join room
               onPressed: joinedRoom ? null : () => print('join room'),
               color: Colors.blue,
               textColor: Colors.white,

@@ -32,9 +32,10 @@ class PlayingCard {
   }
 
   Widget _generateCard(var context, bool flipped, bool stackFinished) {
+    var size = MediaQuery.of(context).size;
     return SizedBox(
-      width: 100.0,
-      height: 155.0,
+      width: size.width / 4,
+      height: ((size.width / 4) * 1.5454) + 15,
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
@@ -54,7 +55,8 @@ class PlayingCard {
                                   : MediaQuery.of(context).platformBrightness ==
                                           Brightness.light
                                       ? Colors.black
-                                      : Colors.white),
+                                      : Colors.white,
+                              fontFamily: "Kelly Slab"),
                         ),
                         SizedBox(width: 8.0),
                         _getIcon(context, _IconSize.SMALL)
@@ -76,7 +78,8 @@ class PlayingCard {
                                   : MediaQuery.of(context).platformBrightness ==
                                           Brightness.light
                                       ? Colors.black
-                                      : Colors.white),
+                                      : Colors.white,
+                              fontFamily: "Kelly Slab"),
                         ),
                       ],
                     ),
@@ -101,8 +104,7 @@ class PlayingCard {
     if (partOfCenter == null) partOfCenter = false;
     if (flipped)
       return !partOfCenter
-          ? LongPressDraggable<PlayingCard>(
-              hapticFeedbackOnStart: true,
+          ? Draggable<PlayingCard>(
               data: this,
               feedback: _generateCard(context, flipped, stackFinished),
               child: _generateCard(context, flipped, stackFinished))
