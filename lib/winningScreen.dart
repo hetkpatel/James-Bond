@@ -4,8 +4,7 @@ class WinningScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final WinningArgs args = ModalRoute.of(context).settings.arguments;
-//  final WinningArgs args = WinningArgs(playerWon: false);
-
+    print("Winner: ${args.playerWon}");
 
     return Scaffold(
       appBar: AppBar(

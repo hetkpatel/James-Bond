@@ -23,6 +23,8 @@ class _GameState extends State<Game> {
   final List<GlobalKey<DeckState>> keys = [];
   DatabaseReference ref = FirebaseDatabase.instance.reference();
   List<Deck> decks = [];
+  Timer timer;
+  StreamSubscription finish;
 
   GlobalKey<CenterCardsState> centerKey = GlobalKey();
   CenterCards centerCards;
@@ -32,11 +34,10 @@ class _GameState extends State<Game> {
     super.initState();
     ref = ref.child(widget.uuid);
 
-    Timer timer = Timer.periodic(
+    timer = Timer.periodic(
         Duration(milliseconds: 500), (timer) => _checkForWinner());
 
     if (widget.host) {
-      // TODO: Perform a better way to divide the cards and make it more even and random
       // Create a full 52 deck
       List<PlayingCard> fullDeck = [];
       for (int i = 0; i < CardData.values.length; i++)
@@ -78,7 +79,7 @@ class _GameState extends State<Game> {
           .child("centerCards")
           .set(PlayingCard.toDatabaseCenter(centerCards.cards));
     } else {
-      // TODO: get centerCards and 24-pack from database
+      // Get centerCards and 24-pack from database
       ref.child("24Pack").once().then((pack) {
         var stringPack = pack.value;
         List<PlayingCard> deck24 = [];
@@ -116,8 +117,9 @@ class _GameState extends State<Game> {
       });
     }
 
-    ref.child('state').onValue.listen((state) {
+    finish = ref.child('state').onValue.listen((state) {
       if (state.snapshot.value == DatabaseStates.FINISH) {
+        timer.cancel();
         Navigator.pushReplacementNamed(context, "/Winning",
             arguments: WinningArgs(playerWon: false));
       }
@@ -145,7 +147,6 @@ class _GameState extends State<Game> {
           return !decks[index].deck.contains(data);
         },
         onAccept: (data) async {
-//          print(centerKey.currentState.tempCard.retriveStringFormat());
           if (centerKey.currentState.tempCard == data) {
             var result = await showDialog<PlayingCard>(
                 context: context,
@@ -210,6 +211,8 @@ class _GameState extends State<Game> {
 
     if (winner) {
       ref.child('state').set(DatabaseStates.FINISH);
+      timer.cancel();
+      finish.cancel();
       Navigator.pushReplacementNamed(context, "/Winning",
           arguments: WinningArgs(playerWon: true));
     }

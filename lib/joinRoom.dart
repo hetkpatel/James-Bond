@@ -20,12 +20,6 @@ class _JoinRoomState extends State<JoinRoom> {
   var destroy = true;
   TextEditingController controller = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    print(destroy);
-  }
-
   void joinRoom(passCode) {
     passCode = passCode.toLowerCase();
     database.child('rooms/$passCode').once().then((DataSnapshot snapshot) {
@@ -48,7 +42,6 @@ class _JoinRoomState extends State<JoinRoom> {
 
   void listenRoomState() {
     database.child("$uuid/state").onValue.listen((Event event) {
-      print(event.snapshot.value);
       if (event.snapshot.value == DatabaseStates.DEAL_CARDS) {
         destroy = false;
         Navigator.popUntil(context, ModalRoute.withName("/"));

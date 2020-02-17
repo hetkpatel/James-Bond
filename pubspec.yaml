@@ -30,6 +30,7 @@ dependencies:
   connectivity_wrapper: ^1.0.2
   vibrate: ^0.0.4
   pin_code_fields: ^2.3.0+3
+  confetti: ^0.3.0
 
 dev_dependencies:
   flutter_test:
