@@ -25,6 +25,7 @@ class _GameState extends State<Game> {
   List<Deck> decks = [];
   Timer timer;
   StreamSubscription finish;
+  Stopwatch watch = Stopwatch();
 
   GlobalKey<CenterCardsState> centerKey = GlobalKey();
   CenterCards centerCards;
@@ -121,9 +122,11 @@ class _GameState extends State<Game> {
       if (state.snapshot.value == DatabaseStates.FINISH) {
         timer.cancel();
         Navigator.pushReplacementNamed(context, "/Winning",
-            arguments: WinningArgs(playerWon: false));
+            arguments: WinningArgs(playerWon: false, time: watch.elapsed));
       }
     });
+
+    watch.start();
   }
 
   @override
@@ -214,7 +217,7 @@ class _GameState extends State<Game> {
       timer.cancel();
       finish.cancel();
       Navigator.pushReplacementNamed(context, "/Winning",
-          arguments: WinningArgs(playerWon: true));
+          arguments: WinningArgs(playerWon: true, time: watch.elapsed));
     }
   }
 
@@ -234,7 +237,6 @@ class _GameState extends State<Game> {
             children: <Widget>[
               Expanded(
                 child: Container(
-//                  height: 240,
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Row(
