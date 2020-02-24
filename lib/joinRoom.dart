@@ -76,10 +76,7 @@ class _JoinRoomState extends State<JoinRoom> {
               backgroundColor: Color.fromRGBO(0, 0, 0, 0.01),
               autoFocus: true,
               textStyle: TextStyle(
-                  color: MediaQuery.of(context).platformBrightness ==
-                          Brightness.light
-                      ? Colors.black
-                      : Colors.white,
+                  color: Colors.black,
                   fontSize: 35.0,
                   fontFamily: "Special Elite"),
               onChanged: (value) {

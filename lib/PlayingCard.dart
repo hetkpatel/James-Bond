@@ -52,10 +52,7 @@ class PlayingCard {
                               color: suit == CardSuit.HEART ||
                                       suit == CardSuit.DIAMOND
                                   ? Colors.red
-                                  : MediaQuery.of(context).platformBrightness ==
-                                          Brightness.light
-                                      ? Colors.black
-                                      : Colors.white,
+                                  : Colors.black,
                               fontFamily: "Kelly Slab"),
                         ),
                         SizedBox(width: 8.0),
@@ -73,12 +70,9 @@ class PlayingCard {
                           style: TextStyle(
                               fontSize: 22.0,
                               color: suit == CardSuit.HEART ||
-                                      suit == CardSuit.DIAMOND
+                                  suit == CardSuit.DIAMOND
                                   ? Colors.red
-                                  : MediaQuery.of(context).platformBrightness ==
-                                          Brightness.light
-                                      ? Colors.black
-                                      : Colors.white,
+                                  : Colors.black,
                               fontFamily: "Kelly Slab"),
                         ),
                       ],
@@ -121,18 +115,12 @@ class PlayingCard {
         return SvgPicture.asset(
           "assets/spade.svg",
           width: size == _IconSize.LARGE ? 52.0 : 12.0,
-          color: MediaQuery.of(context).platformBrightness == Brightness.dark
-              ? Colors.white
-              : null,
         );
         break;
       case CardSuit.CLUB:
         return SvgPicture.asset(
           "assets/club.svg",
           width: size == _IconSize.LARGE ? 52.0 : 12.0,
-          color: MediaQuery.of(context).platformBrightness == Brightness.dark
-              ? Colors.white
-              : null,
         );
         break;
       case CardSuit.HEART:
