@@ -1,6 +1,6 @@
-# james_bond
+# suits
 
-An online card game called James Bond.
+An online card game called Suits.
 
 ## Getting Started
 

@@ -97,6 +97,11 @@ class Welcome extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, "/Help"),
+        child: Icon(Icons.help),
+        tooltip: "How to play",
+      ),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:james_bond/DatabaseStates.dart';
-import 'package:james_bond/Player.dart';
-import 'package:james_bond/game.dart';
+import 'package:suits/DatabaseStates.dart';
+import 'package:suits/Player.dart';
+import 'package:suits/game.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math';
 

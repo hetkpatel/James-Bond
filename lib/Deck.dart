@@ -1,6 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:james_bond/PlayingCard.dart';
+import 'package:suits/PlayingCard.dart';
 
 final key = new GlobalKey<DeckState>();
 

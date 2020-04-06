@@ -3,11 +3,11 @@ import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:james_bond/CenterCards.dart';
-import 'package:james_bond/DatabaseStates.dart';
-import 'package:james_bond/Deck.dart';
-import 'package:james_bond/PlayingCard.dart';
-import 'package:james_bond/winningScreen.dart';
+import 'package:suits/CenterCards.dart';
+import 'package:suits/DatabaseStates.dart';
+import 'package:suits/Deck.dart';
+import 'package:suits/PlayingCard.dart';
+import 'package:suits/winningScreen.dart';
 
 class Game extends StatefulWidget {
   final String uuid;
@@ -227,7 +227,7 @@ class _GameState extends State<Game> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('James Bond'),
+        title: Text('Suits'),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 8.0),

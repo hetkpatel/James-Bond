@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:james_bond/PlayingCard.dart';
+import 'package:suits/PlayingCard.dart';
 import 'package:vibrate/vibrate.dart';
 
 // ignore: must_be_immutable

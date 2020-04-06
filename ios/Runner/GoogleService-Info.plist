@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>996485688184-uqo1qocj41r93276jo6ol0rlj9dv45mt.apps.googleusercontent.com</string>
+	<string>565512096164-nmiupl20632ge442mcu3bcn9t3s3mfai.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.996485688184-uqo1qocj41r93276jo6ol0rlj9dv45mt</string>
+	<string>com.googleusercontent.apps.565512096164-nmiupl20632ge442mcu3bcn9t3s3mfai</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDhxGovml8loaRwaWzmhn0Qe218muINy-I</string>
+	<string>AIzaSyBorTQfejRkbMrkoYRM46WDDkZWDKDZ54o</string>
 	<key>GCM_SENDER_ID</key>
-	<string>996485688184</string>
+	<string>565512096164</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.hetpatel.jamesBond</string>
+	<string>com.hetpatel.suits</string>
 	<key>PROJECT_ID</key>
-	<string>james-bond-3743f</string>
+	<string>suits-4f57c</string>
 	<key>STORAGE_BUCKET</key>
-	<string>james-bond-3743f.appspot.com</string>
+	<string>suits-4f57c.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:996485688184:ios:7c46ef4937c637811b768d</string>
+	<string>1:565512096164:ios:47c1a4c552be0a74199931</string>
 	<key>DATABASE_URL</key>
-	<string>https://james-bond-3743f.firebaseio.com</string>
+	<string>https://suits-4f57c.firebaseio.com</string>
 </dict>
 </plist>
