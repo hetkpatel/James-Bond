@@ -55,7 +55,7 @@ flutter:
     - assets/diamond.svg
     - assets/heart.svg
     - assets/spade.svg
-    - assets/james_bond_logo.png
+    - assets/suits_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

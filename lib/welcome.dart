@@ -15,7 +15,7 @@ class Welcome extends StatelessWidget {
           children: <Widget>[
             Container(
               child: Image.asset(
-                'assets/james_bond_logo.png',
+                'assets/suits_logo.png',
                 height: 200,
                 fit: BoxFit.fitWidth,
               ),
@@ -97,10 +97,15 @@ class Welcome extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, "/Help"),
-        child: Icon(Icons.help),
-        tooltip: "How to play",
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: SafeArea(
+        bottom: true,
+        minimum: EdgeInsets.all(32.0),
+        child: OutlineButton(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+          onPressed: () => Navigator.pushNamed(context, "/Help"),
+          child: Text('How to play'),
+        ),
       ),
     );
   }
